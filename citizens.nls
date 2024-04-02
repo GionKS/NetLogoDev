@@ -1,0 +1,50 @@
+; File with the "to-go"- functionality of citizen-agents
+
+; FILE HISTORY:
+
+; 2024-01-29 Initial template, gks
+; 
+;
+;---------------------------------------------------
+
+
+
+to citizen_behavior
+  
+; checking if the citizen is in prison
+ifelse inPrison? = true [
+    set jailtime jailtime + 1 ;counting the time in prison
+    print (word "citizen " who "is in prison since: " jailtime)
+    if jailtime > jailsentence [; released from prison
+      set jailtime 0
+      ; move forward where there are no cops and is not prison
+      let places neighborhood with [not any? cops-here and region != "prison"]
+      if any? places [move-to one-of places]
+      set inPrison? false
+      set color yellow
+      print (word "citizen " who "is released from prison")
+    ]
+  ]
+  [;else checking if cops are within vision radius
+    let nearby-police other cops in-radius citizen-vision
+    if any? nearby-police [
+      let police min-one-of nearby-police [distance myself]; identify the cop that is nearest
+      if police != nobody [
+        print (word " citizen: " who " sees cop: " police)
+        set heading (towards police) + 180 ; face opposite from the nearest police
+      ] 
+    ]    
+    ; move forward where there are no cops and is not prison
+    let places neighborhood with [not any? cops-here and region != "prison"]
+    if any? places [move-to one-of places]
+  ]
+end
+
+; if asked to go to prison  
+to gotoprison 
+  ; set flag
+  set inPrison? true
+  set color red
+  ; move to prison into an own cell (=own patch)
+  move-to one-of patches with [not any? turtles-here and region = "prison"]
+end

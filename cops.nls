@@ -1,0 +1,32 @@
+; File with the "to-go"- functionality of cops-agents
+
+; FILE HISTORY:
+
+; 2022-04-10 Initial template, gks
+; 
+;
+;
+;
+;---------------------------------------------------
+
+to cop_behavior
+  ; check if citizen is nearby to arrest
+  let suspect one-of citizens-here with [inPrison? = false] ; need to make sure the citizen is not in jail, otherwise can the cop be trapped besides
+    ifelse suspect != nobody [
+        ; move the citizen to prison and mark them as arrested
+        print (word " cop-agent: " who " puts suspect: " suspect " to prison!")
+        ask suspect [
+           set jailsentence random max-jailterm
+           gotoprison
+        ]
+    ]
+    [; else look for citizens and move towards them
+     set suspect one-of other citizens with [inPrison? = false] in-radius cop-vision
+     if suspect != nobody [
+        print (word " cop-agent: " who " sees suspect: " suspect)
+        face suspect  
+    ]
+    forward cop-speed ; move forward towards suspect
+  ]
+end
+
